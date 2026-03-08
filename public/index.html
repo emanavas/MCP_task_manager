@@ -636,11 +636,13 @@ body {
 <div id="main">
   <div id="filter-bar">
     <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="hide-done">⚡ Pending only</button>
     <button class="filter-btn" data-filter="pending">Pending</button>
     <button class="filter-btn" data-filter="in-progress">In Progress</button>
     <button class="filter-btn" data-filter="done">Done</button>
     <button class="filter-btn" data-filter="high">🔴 High Priority</button>
     <div id="filter-bar-right">
+      <button class="btn-fold" onclick="openHistoryPanel()" title="View done task history">📋 History</button>
       <button class="btn-fold" onclick="collapseAll()" title="Collapse all groups">⊟ Collapse All</button>
       <button class="btn-fold" onclick="expandAll()" title="Expand all groups">⊞ Expand All</button>
     </div>
@@ -650,6 +652,33 @@ body {
 
 <!-- Hidden native color picker for group color editing -->
 <input type="color" id="group-color-picker" style="position:absolute;visibility:hidden;width:0;height:0">
+
+<!-- History Panel -->
+<div class="modal-backdrop" id="modal-history" style="display:none">
+  <div class="modal" style="max-width:720px;width:95vw;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-shrink:0;">
+      <h2 style="margin:0;font-size:1rem;">📋 Done Task History</h2>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button id="hist-sort-btn" onclick="toggleHistSort()" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;">Newest first</button>
+        <button onclick="closeModal('modal-history')" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;padding:2px 6px;">×</button>
+      </div>
+    </div>
+    <div style="overflow-y:auto;flex:1;">
+      <table id="hist-table" style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="position:sticky;top:0;background:var(--surface);">
+            <th style="text-align:left;padding:6px 8px;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap;">Completed</th>
+            <th style="text-align:left;padding:6px 8px;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border);">Task</th>
+            <th style="text-align:left;padding:6px 8px;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap;">Group</th>
+            <th style="text-align:left;padding:6px 8px;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border);">Priority</th>
+          </tr>
+        </thead>
+        <tbody id="hist-tbody"></tbody>
+      </table>
+      <p id="hist-empty" style="display:none;text-align:center;color:var(--text-muted);padding:40px 0;">No completed tasks yet.</p>
+    </div>
+  </div>
+</div>
 
 <!-- Add Group Modal -->
 <div class="modal-backdrop" id="modal-group" style="display:none">
@@ -796,6 +825,7 @@ function applyFilter(tasks, lq) {
     if (activeFilter === 'pending'     && t.status !== 'pending')      return false;
     if (activeFilter === 'in-progress' && t.status !== 'in-progress')  return false;
     if (activeFilter === 'done'        && t.status !== 'done')         return false;
+    if (activeFilter === 'hide-done'   && t.status === 'done')         return false;
     if (activeFilter === 'high'        && (t.priority !== 'high' || t.status === 'done')) return false;
     if (lq && !t.title.toLowerCase().includes(lq) && !t.notes.toLowerCase().includes(lq)) return false;
     return true;
@@ -1325,6 +1355,59 @@ function buildColorPresets(containerId, hiddenId) {
 function closeModal(id) {
   document.getElementById(id).style.display = 'none';
   _editTaskId = null;
+}
+
+// ── History Panel ─────────────────────────────────────────────────────────────
+let histSortAsc = false;
+
+function openHistoryPanel() {
+  renderHistory();
+  document.getElementById('modal-history').style.display = 'flex';
+}
+
+function toggleHistSort() {
+  histSortAsc = !histSortAsc;
+  document.getElementById('hist-sort-btn').textContent = histSortAsc ? 'Oldest first' : 'Newest first';
+  renderHistory();
+}
+
+function renderHistory() {
+  const doneTasks = (state.tasks ?? []).filter(t => t.status === 'done');
+  doneTasks.sort((a, b) => {
+    const ta = a.completed_at ?? a.created ?? '';
+    const tb = b.completed_at ?? b.created ?? '';
+    return histSortAsc ? ta.localeCompare(tb) : tb.localeCompare(ta);
+  });
+
+  const tbody = document.getElementById('hist-tbody');
+  const empty = document.getElementById('hist-empty');
+
+  if (doneTasks.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const groupMap = {};
+  (state.groups ?? []).forEach(g => { groupMap[g.id] = g.name; });
+  const prioColor = { high: '#ef4444', medium: '#f59e0b', low: '#94a3b8' };
+
+  tbody.innerHTML = doneTasks.map((t, i) => {
+    const groupName = t.group_id ? (groupMap[t.group_id] ?? 'Ungrouped') : 'Ungrouped';
+    const completed = t.completed_at
+      ? new Date(t.completed_at).toLocaleString('es', { dateStyle: 'short', timeStyle: 'short' })
+      : '—';
+    const bg = i % 2 === 0 ? 'var(--surface)' : 'var(--surface2)';
+    return `<tr style="background:${bg};">
+      <td style="padding:7px 8px;color:var(--text-muted);font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums;">${completed}</td>
+      <td style="padding:7px 8px;color:var(--text);">${escHtml(t.title)}</td>
+      <td style="padding:7px 8px;color:var(--text-muted);font-size:11px;">${escHtml(groupName)}</td>
+      <td style="padding:7px 8px;">
+        <span style="color:${prioColor[t.priority] ?? '#94a3b8'};font-weight:600;font-size:11px;">${t.priority ?? '—'}</span>
+      </td>
+    </tr>`;
+  }).join('');
 }
 
 async function api(method, path, body) {
