@@ -1403,7 +1403,8 @@ function renderHistory() {
     } else if (t.created) {
       const d = new Date(t.created);
       completedHtml = `<span style="font-variant-numeric:tabular-nums;color:var(--text-dim);">${d.toLocaleDateString('es', { day:'2-digit', month:'2-digit', year:'2-digit' })}</span>`
-        + `<span style="display:block;font-size:10px;color:var(--text-dim);font-style:italic;">creado</span>`;
+        + `<span style="display:block;font-size:10px;color:var(--text-dim);">${d.toLocaleTimeString('es', { hour:'2-digit', minute:'2-digit' })}</span>`
+        + `<span style="display:block;font-size:9px;color:var(--text-dim);font-style:italic;">creado</span>`;
     } else {
       completedHtml = '<span style="color:var(--text-dim);">—</span>';
     }
