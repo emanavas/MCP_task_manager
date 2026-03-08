@@ -36,9 +36,13 @@ db.exec(`
     status    TEXT    NOT NULL DEFAULT 'pending',
     priority  TEXT    NOT NULL DEFAULT 'medium',
     position  INTEGER NOT NULL DEFAULT 0,
-    created   TEXT    NOT NULL DEFAULT (datetime('now'))
+    created   TEXT    NOT NULL DEFAULT (datetime('now')),
+    completed_at TEXT  DEFAULT NULL
   );
 `);
+
+// Add completed_at to existing DBs (idempotent)
+try { db.exec('ALTER TABLE tasks ADD COLUMN completed_at TEXT DEFAULT NULL;'); } catch { /* already exists */ }
 
 // ── Migrate from tasks.json (runs once if DB is empty) ───────────────────────
 const taskCount = db.prepare('SELECT COUNT(*) as c FROM tasks').get().c;
@@ -258,14 +262,19 @@ const server = createServer(async (req, res) => {
     const body = await parseBody(req);
     const t    = db.prepare('SELECT * FROM tasks WHERE id=?').get(taskMatch[1]);
     if (!t) return json(res, { error: 'Not found' }, 404);
+    const newStatus = body.status ?? t.status;
+    const completedAt = newStatus === 'done' && t.status !== 'done'
+      ? new Date().toISOString()
+      : (newStatus !== 'done' ? null : t.completed_at);
     db.prepare(`
-      UPDATE tasks SET title=?,notes=?,status=?,priority=?,group_id=? WHERE id=?
+      UPDATE tasks SET title=?,notes=?,status=?,priority=?,group_id=?,completed_at=? WHERE id=?
     `).run(
       body.title    ?? t.title,
       body.notes    ?? t.notes,
-      body.status   ?? t.status,
+      newStatus,
       body.priority ?? t.priority,
       'group_id' in body ? body.group_id : t.group_id,
+      completedAt,
       t.id
     );
     return json(res, db.prepare('SELECT * FROM tasks WHERE id=?').get(t.id));
