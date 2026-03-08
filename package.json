@@ -1,0 +1,9 @@
+{
+  "name": "mcp-task-manager",
+  "version": "1.0.0",
+  "description": "Generic GUI task manager — uses built-in node:sqlite (Node 22.5+)",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  }
+}
