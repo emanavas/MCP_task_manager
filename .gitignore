@@ -5,3 +5,8 @@ task-manager/tasks.db-wal
 
 # Node
 node_modules/
+
+pnpm-workspace.yaml
+tasks.db
+tasks.db-shm
+tasks.db-wal
