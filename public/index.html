@@ -1395,12 +1395,21 @@ function renderHistory() {
 
   tbody.innerHTML = doneTasks.map((t, i) => {
     const groupName = t.group_id ? (groupMap[t.group_id] ?? 'Ungrouped') : 'Ungrouped';
-    const completed = t.completed_at
-      ? new Date(t.completed_at).toLocaleString('es', { dateStyle: 'short', timeStyle: 'short' })
-      : '—';
+    let completedHtml;
+    if (t.completed_at) {
+      const d = new Date(t.completed_at);
+      completedHtml = `<span style="font-variant-numeric:tabular-nums;">${d.toLocaleDateString('es', { day:'2-digit', month:'2-digit', year:'2-digit' })}</span>`
+        + `<span style="display:block;font-size:10px;color:var(--text-dim);">${d.toLocaleTimeString('es', { hour:'2-digit', minute:'2-digit' })}</span>`;
+    } else if (t.created) {
+      const d = new Date(t.created);
+      completedHtml = `<span style="font-variant-numeric:tabular-nums;color:var(--text-dim);">${d.toLocaleDateString('es', { day:'2-digit', month:'2-digit', year:'2-digit' })}</span>`
+        + `<span style="display:block;font-size:10px;color:var(--text-dim);font-style:italic;">creado</span>`;
+    } else {
+      completedHtml = '<span style="color:var(--text-dim);">—</span>';
+    }
     const bg = i % 2 === 0 ? 'var(--surface)' : 'var(--surface2)';
     return `<tr style="background:${bg};">
-      <td style="padding:7px 8px;color:var(--text-muted);font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums;">${completed}</td>
+      <td style="padding:7px 8px;font-size:11px;white-space:nowrap;">${completedHtml}</td>
       <td style="padding:7px 8px;color:var(--text);">${escHtml(t.title)}</td>
       <td style="padding:7px 8px;color:var(--text-muted);font-size:11px;">${escHtml(groupName)}</td>
       <td style="padding:7px 8px;">
