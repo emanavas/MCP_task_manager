@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  taskmanager:
+    build:
+      context: ../
+      dockerfile: taskmanager_fastapi/Dockerfile
+    ports:
+      - "6543:6543"
+    environment:
+      - TASK_MANAGER_API_KEY=dev_local_key
+      - TASK_MANAGER_DB=/data/tasks.db
+      - TASK_MANAGER_UI_DIR=/app/ui
+    volumes:
+      - tm_data:/data
+    networks:
+      - ia-network
+
+networks:
+  ia-network:
+    external: true
+
+volumes:
+  tm_data:

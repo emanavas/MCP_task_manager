@@ -1,0 +1,102 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Python314\Scripts\uvicorn.exe\__main__.py", line 6, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "c:\python314\Lib\site-packages\click\core.py", line 1485, in __call__
+    return self.main(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "c:\python314\Lib\site-packages\click\core.py", line 1406, in main
+    rv = self.invoke(ctx)
+  File "c:\python314\Lib\site-packages\click\core.py", line 1269, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\python314\Lib\site-packages\click\core.py", line 824, in invoke
+    return callback(*args, **kwargs)
+  File "c:\python314\Lib\site-packages\uvicorn\main.py", line 433, in main
+    run(
+    ~~~^
+        app,
+        ^^^^
+    ...<47 lines>...
+        h11_max_incomplete_event_size=h11_max_incomplete_event_size,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "c:\python314\Lib\site-packages\uvicorn\main.py", line 606, in run
+    server.run()
+    ~~~~~~~~~~^^
+  File "c:\python314\Lib\site-packages\uvicorn\server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "c:\python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "c:\python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "c:\python314\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "c:\python314\Lib\site-packages\uvicorn\server.py", line 79, in serve
+    await self._serve(sockets)
+  File "c:\python314\Lib\site-packages\uvicorn\server.py", line 86, in _serve
+    config.load()
+    ~~~~~~~~~~~^^
+  File "c:\python314\Lib\site-packages\uvicorn\config.py", line 441, in load
+    self.loaded_app = import_from_string(self.app)
+                      ~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "c:\python314\Lib\site-packages\uvicorn\importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "c:\python314\Lib\importlib\__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1398, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1371, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1342, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 938, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 759, in exec_module
+  File "<frozen importlib._bootstrap>", line 491, in _call_with_frames_removed
+  File "C:\ENM Projects\PadelFlow\taskmanager_fastapi\main.py", line 100, in <module>
+    @app.post("/api/tasks")
+     ~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\EmanuelMatuteNavas\AppData\Roaming\Python\Python314\site-packages\fastapi\routing.py", line 704, in decorator
+    self.add_api_route(
+    ~~~~~~~~~~~~~~~~~~^
+        path,
+        ^^^^^
+    ...<23 lines>...
+        generate_unique_id_function=generate_unique_id_function,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\EmanuelMatuteNavas\AppData\Roaming\Python\Python314\site-packages\fastapi\routing.py", line 643, in add_api_route
+    route = route_class(
+        self.prefix + path,
+    ...<24 lines>...
+        generate_unique_id_function=current_generate_unique_id,
+    )
+  File "C:\Users\EmanuelMatuteNavas\AppData\Roaming\Python\Python314\site-packages\fastapi\routing.py", line 489, in __init__
+    self.dependant = get_dependant(path=self.path_format, call=self.endpoint)
+                     ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\EmanuelMatuteNavas\AppData\Roaming\Python\Python314\site-packages\fastapi\dependencies\utils.py", line 261, in get_dependant
+    type_annotation, depends, param_field = analyze_param(
+                                            ~~~~~~~~~~~~~^
+        param_name=param_name,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        is_path_param=is_path_param,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\EmanuelMatuteNavas\AppData\Roaming\Python\Python314\site-packages\fastapi\dependencies\utils.py", line 429, in analyze_param
+    field = create_response_field(
+        name=param_name,
+    ...<4 lines>...
+        field_info=field_info,
+    )
+  File "C:\Users\EmanuelMatuteNavas\AppData\Roaming\Python\Python314\site-packages\fastapi\utils.py", line 101, in create_response_field
+    raise fastapi.exceptions.FastAPIError(
+    ...<7 lines>...
+    ) from None
+fastapi.exceptions.FastAPIError: Invalid args for response field! Hint: check that <class 'models.Task'> is a valid Pydantic field type. If you are using a return type annotation that is not a valid Pydantic field (e.g. Union[Response, dict, None]) you can disable generating the response model from the type annotation with the path operation decorator parameter response_model=None. Read more: https://fastapi.tiangolo.com/tutorial/response-model/
